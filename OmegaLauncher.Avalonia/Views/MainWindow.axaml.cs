@@ -110,6 +110,7 @@ namespace OmegaLauncher.Avalonia.Views
                 if (root != null && _clientLauncher.Initialize(root) == ClientLauncherInitializationResult.Success)
                 {
                     _clientLauncher.GuiConfig.ClientPath = root;
+                    _clientLauncher.SaveData();
                     return ClientLauncherInitializationResult.Success;
                 }
             }
@@ -128,6 +129,7 @@ namespace OmegaLauncher.Avalonia.Views
                 if (root != null && _clientLauncher.Initialize(root) == ClientLauncherInitializationResult.Success)
                 {
                     _clientLauncher.GuiConfig.ClientPath = root;
+                    _clientLauncher.SaveData();
                     return ClientLauncherInitializationResult.Success;
                 }
 

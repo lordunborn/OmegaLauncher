@@ -39,24 +39,28 @@ namespace OmegaLauncher.Core.ClientManagement
 
         public ClientLauncherInitializationResult Initialize(string clientPath)
         {
-            // Configs
-            LaunchConfig = JsonHelper.LoadOrCreate(LaunchConfigFileName, JsonContext.Default.LaunchConfig);
-            GuiConfig = JsonHelper.LoadOrCreate(GuiConfigFileName, JsonContext.Default.GuiConfig);
-
-            // ServerList
-            List<ServerInfo> serverList = JsonHelper.LoadOrCreate(ServerListFileName, JsonContext.Default.ListServerInfo);
-            ServerManager.SetServerList(serverList);
-
-            // A fresh install takes the servers from the deployment file that came with the launcher.
-            Deployment = DeploymentConfig.Load();
-            if (ServerManager.ServerCount == 0)
+            // Settings are read from disk only the first time. Initialize runs again when the player picks another game folder,
+            // and reloading here would throw that new folder away (it is only written to disk by SaveData).
+            if (GuiConfig == null)
             {
-                foreach (ServerInfo server in Deployment.Servers)
-                    ServerManager.ServerList.Add(server);
-            }
+                LaunchConfig = JsonHelper.LoadOrCreate(LaunchConfigFileName, JsonContext.Default.LaunchConfig);
+                GuiConfig = JsonHelper.LoadOrCreate(GuiConfigFileName, JsonContext.Default.GuiConfig);
 
-            if (ServerManager.ServerCount == 0)
-                ServerManager.AddServer();
+                // ServerList
+                List<ServerInfo> serverList = JsonHelper.LoadOrCreate(ServerListFileName, JsonContext.Default.ListServerInfo);
+                ServerManager.SetServerList(serverList);
+
+                // A fresh install takes the servers from the deployment file that came with the launcher.
+                Deployment = DeploymentConfig.Load();
+                if (ServerManager.ServerCount == 0)
+                {
+                    foreach (ServerInfo server in Deployment.Servers)
+                        ServerManager.ServerList.Add(server);
+                }
+
+                if (ServerManager.ServerCount == 0)
+                    ServerManager.AddServer();
+            }
 
             // ClientDirectory
             ClientLauncherInitializationResult directoryResult = _clientDirectory.Initialize(clientPath);

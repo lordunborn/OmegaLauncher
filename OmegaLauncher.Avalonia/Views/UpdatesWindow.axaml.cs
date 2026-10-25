@@ -181,6 +181,7 @@ namespace OmegaLauncher.Avalonia.Views
             }
 
             _clientLauncher.GuiConfig.ClientPath = root;
+            _clientLauncher.SaveData();
             ClientFolderChanged = true;
             Close();
         }
