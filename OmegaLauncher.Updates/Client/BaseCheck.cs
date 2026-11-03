@@ -11,6 +11,9 @@ namespace OmegaLauncher.Updates.Client
         public List<string> Missing { get; } = new();
         public List<string> WrongSize { get; } = new();
 
+        /// <summary>One readable line per flagged file (path plus expected and found size), so a player can say exactly which files look wrong.</summary>
+        public List<string> Details { get; } = new();
+
         public bool Ok => Missing.Count == 0 && WrongSize.Count == 0;
     }
 
@@ -47,9 +50,15 @@ namespace OmegaLauncher.Updates.Client
                 string path = ClientPathResolver.Resolve(clientRoot, entry.Path);
                 FileInfo info = new(path);
                 if (info.Exists == false)
+                {
                     result.Missing.Add(entry.Path);
+                    result.Details.Add($"MISSING    {entry.Path} (expected {entry.Size} bytes)");
+                }
                 else if (info.Length != entry.Size)
+                {
                     result.WrongSize.Add(entry.Path);
+                    result.Details.Add($"WRONG SIZE {entry.Path} (expected {entry.Size} bytes, found {info.Length})");
+                }
             }
 
             return result;

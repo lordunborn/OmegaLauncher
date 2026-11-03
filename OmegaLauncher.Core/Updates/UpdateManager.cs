@@ -101,6 +101,13 @@ namespace OmegaLauncher.Core.Updates
             {
                 sb.AppendLine($"Warning: {check.BaseCheck.Missing.Count} stock file(s) are missing and {check.BaseCheck.WrongSize.Count} have an unexpected size. " +
                               "Verify the game files in Steam, then check again.");
+
+                const int maxListed = 30;
+                foreach (string detail in check.BaseCheck.Details.Take(maxListed))
+                    sb.AppendLine("  " + detail);
+
+                if (check.BaseCheck.Details.Count > maxListed)
+                    sb.AppendLine($"  ... and {check.BaseCheck.Details.Count - maxListed} more. The full list is in .mho\\stock-file-check.txt in your game folder.");
             }
 
             return sb.ToString().TrimEnd();

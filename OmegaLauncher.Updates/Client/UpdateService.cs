@@ -102,6 +102,8 @@ namespace OmegaLauncher.Updates.Client
                 }
             }
 
+            WriteBaseCheckReport(folders, baseCheck);
+
             return new UpdateCheckResult
             {
                 Manifest = manifest,
@@ -110,6 +112,31 @@ namespace OmegaLauncher.Updates.Client
                 BaseCheck = baseCheck,
                 LauncherTooOld = manifest.MinLauncherVersion > launcherVersion
             };
+        }
+
+        /// <summary>Saves the full list of flagged stock files to .mho/stock-file-check.txt (and removes an old report once the files are fine), so a player can send it.</summary>
+        private static void WriteBaseCheckReport(MhoFolders folders, BaseCheckResult baseCheck)
+        {
+            if (baseCheck == null)
+                return;
+
+            string reportPath = Path.Combine(folders.Mho, "stock-file-check.txt");
+
+            try
+            {
+                if (baseCheck.Ok)
+                {
+                    File.Delete(reportPath);
+                    return;
+                }
+
+                Directory.CreateDirectory(folders.Mho);
+                File.WriteAllLines(reportPath, baseCheck.Details.Prepend($"{baseCheck.Details.Count} of {baseCheck.FilesChecked} stock files look wrong ({DateTime.Now:yyyy-MM-dd HH:mm})"));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // The report is a convenience only.
+            }
         }
 
         public static Task<ApplyResult> ApplyAsync(UpdateCheckResult check, IContentSource source, string clientRoot, IProgress<UpdateProgress> progress = null,
