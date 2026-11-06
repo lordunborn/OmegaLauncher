@@ -19,7 +19,7 @@ namespace OmegaLauncher.Updates.Client
 
     /// <summary>
     /// Fast sanity check of a player's stock client against the published list of stock file sizes (existence and size only, no hashing of 24 GB).
-    /// Files the launcher manages are skipped, because they are supposed to differ from stock.
+    /// Files the launcher manages are skipped, because they are supposed to differ from stock, and so are missing empty (0 byte) files.
     /// </summary>
     public static class BaseCheck
     {
@@ -49,7 +49,13 @@ namespace OmegaLauncher.Updates.Client
 
                 string path = ClientPathResolver.Resolve(clientRoot, entry.Path);
                 FileInfo info = new(path);
-                if (info.Exists == false)
+                if (info.Exists == false && entry.Size == 0)
+                {
+                    // Empty stock files (placeholder configs, empty localization files) are routinely dropped by zip tools, cloud sync and depot
+                    // downloaders, and nothing depends on them, so a missing one is not a problem.
+                    result.FilesChecked--;
+                }
+                else if (info.Exists == false)
                 {
                     result.Missing.Add(entry.Path);
                     result.Details.Add($"MISSING    {entry.Path} (expected {entry.Size} bytes)");

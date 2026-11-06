@@ -80,7 +80,14 @@ namespace OmegaLauncher.Updates.Client
 
             // Remember what is already up to date, so the next check does not hash it again.
             UpdatePlanner.RememberUpToDate(plan, state);
-            if (state.Files.Count > 0)
+
+            // A manifest that changes no files (a server-only version, or a version bump) leaves nothing to apply, so the installed version would stay
+            // behind and the content token sent at login would keep reporting the old one. Every file matches, so the client IS at this version.
+            bool versionAdopted = plan.UpToDate && state.ContentVersion != manifest.ContentVersion;
+            if (versionAdopted)
+                state.ContentVersion = manifest.ContentVersion;
+
+            if (state.Files.Count > 0 || versionAdopted)
                 LauncherStateStore.Save(folders, state);
 
             BaseCheckResult baseCheck = null;

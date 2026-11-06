@@ -50,13 +50,10 @@ namespace OmegaLauncher.Core.ClientManagement
                 List<ServerInfo> serverList = JsonHelper.LoadOrCreate(ServerListFileName, JsonContext.Default.ListServerInfo);
                 ServerManager.SetServerList(serverList);
 
-                // A fresh install takes the servers from the deployment file that came with the launcher.
+                // The servers of the deployment file that came with the launcher are added on every start, so a player whose list was written
+                // before the file arrived (or who lacks a newer server) still gets them.
                 Deployment = DeploymentConfig.Load();
-                if (ServerManager.ServerCount == 0)
-                {
-                    foreach (ServerInfo server in Deployment.Servers)
-                        ServerManager.ServerList.Add(server);
-                }
+                ServerManager.MergeDeploymentServers(Deployment.Servers);
 
                 if (ServerManager.ServerCount == 0)
                     ServerManager.AddServer();

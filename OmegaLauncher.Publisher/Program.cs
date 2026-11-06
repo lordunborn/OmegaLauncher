@@ -56,7 +56,7 @@ namespace OmegaLauncher.Publisher
   keygen   <dir>                              Make the signing key pair (private PEM stays here, public key goes into the launcher).
   baseline <pristine client> [--version 1.53.0.203] [--out baseline.json]
   publish  <edited client> --baseline baseline.json --key private.pem [--out host] [--notes ""text""]
-           [--exclude pattern]... [--exclude-file file] [--cache hashes.json] [--min-launcher N] [--optional] [--new-version]
+           [--exclude pattern]... [--exclude-file file] [--cache hashes.json] [--min-launcher N] [--optional] [--new-version] [--content-version N]
   verify   <url or folder> --pubkey <file or base64> [--deep]
   publish-launcher <built program> --platform win-x64 --version 1.0.1 --key private.pem [--out host] [--notes ""text""]
   serve    <folder> [--port 8099]
@@ -133,6 +133,7 @@ Developer commands that act like a player's launcher (use a COPY of a client, ne
                 MinLauncherVersion = int.TryParse(o.Get("min-launcher"), out int minLauncher) ? minLauncher : 0,
                 Force = o.Flag("optional") == false,
                 ForceNewVersion = o.Flag("new-version"),
+                ContentVersionOverride = int.TryParse(o.Get("content-version"), out int contentVersion) ? contentVersion : 0,
                 Log = Console.WriteLine
             };
 

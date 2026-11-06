@@ -28,6 +28,9 @@ namespace OmegaLauncher.Updates.Publishing
         /// <summary>Publish a new content version even if nothing changed.</summary>
         public bool ForceNewVersion { get; set; }
 
+        /// <summary>Publish under this exact content version instead of previous + 1 (0 = automatic). Must be higher than the previous version; implies a new version even if no file changed.</summary>
+        public int ContentVersionOverride { get; set; }
+
         /// <summary>Optional path of the publisher's file hash cache (speeds up repeated publishes).</summary>
         public string HashCachePath { get; set; }
 
@@ -183,7 +186,10 @@ namespace OmegaLauncher.Updates.Publishing
                     && previous.Files.Zip(entries).All(pair => pair.First.Path == pair.Second.Path && pair.First.Sha256 == pair.Second.Sha256)
                     && previous.Removed.SequenceEqual(removed);
 
-                if (same && options.ForceNewVersion == false)
+                if (options.ContentVersionOverride > 0 && options.ContentVersionOverride <= previous.ContentVersion)
+                    throw new ArgumentException($"--content-version {options.ContentVersionOverride} must be higher than the already published version {previous.ContentVersion}.");
+
+                if (same && options.ForceNewVersion == false && options.ContentVersionOverride <= 0)
                 {
                     result.NoChange = true;
                     result.ContentVersion = previous.ContentVersion;
@@ -195,7 +201,7 @@ namespace OmegaLauncher.Updates.Publishing
             // 4. Manifest last: a reader never sees a manifest whose chunks are not on the host yet.
             ClientManifest manifest = new()
             {
-                ContentVersion = (previous?.ContentVersion ?? 0) + 1,
+                ContentVersion = options.ContentVersionOverride > 0 ? options.ContentVersionOverride : (previous?.ContentVersion ?? 0) + 1,
                 MinLauncherVersion = options.MinLauncherVersion,
                 BaseClientVersion = baseline.BaseClientVersion,
                 Force = options.Force,
